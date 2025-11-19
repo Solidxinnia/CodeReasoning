@@ -1,1 +1,1 @@
-Change the base_checkout_dir to a local directory (or /tmp) of your computer and run
+check for the coverage csv in tmp folder
