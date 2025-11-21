@@ -36,7 +36,7 @@ def check_environment():
     try:
         import subprocess
         if system == "windows":
-            result = subprocess.run(["defects4j.bat", "version"], capture_output=True, text=True)
+            result = subprocess.run(["defects4j.bat", "env"], capture_output=True, text=True)
         else:
             result = subprocess.run(["defects4j", "env"], capture_output=True, text=True)
         

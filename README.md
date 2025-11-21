@@ -41,7 +41,7 @@ ls ~/defects4j_mutants/
 ## Command Line Arguments Understanding
 
 | Argument | Description | Default | Example |
-| :--- | :--- | :---: | :--- |
+| :----- | :--- | :---: | :--- |
 | `--project` | Project(s) to process | **Required** | `"Math-all"`, `"Math-1"`, `"Math-1,Math-2"` |
 | `--percentage` | Percentage of mutants to create (0-100) | `50` | `--percentage 75` |
 | `--max-mutations` | Maximum mutations per mutant (1-4) | `4` | `--max-mutations 2` |
