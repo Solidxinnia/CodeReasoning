@@ -38,7 +38,7 @@ class MutationParser:
                 mutated_code = mutated_code.strip()
                 
                 if mutated_code == '<NO-OP>':
-                    mutated_code = "{}"
+                    mutated_code = "/*"+original_code+"*/"
             else:
                 original_code = code.strip()
                 mutated_code = ""

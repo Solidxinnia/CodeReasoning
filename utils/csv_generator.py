@@ -1,8 +1,10 @@
 """Handles CSV file generation and merging"""
+import sys
 
 import csv
 from pathlib import Path
 from typing import List, Dict, Set
+csv.field_size_limit(sys.maxsize)
 
 
 class CSVGenerator:
