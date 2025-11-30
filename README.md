@@ -1,4 +1,4 @@
-# Defects4J Parallel Mutant Generator
+# Defects4J Mutant Coverage
 
 A parallel mutant generator for Defects4J dataset projects that creates unique mutants with configurable mutation combinations and does comprehensive coverage analysis.
 
