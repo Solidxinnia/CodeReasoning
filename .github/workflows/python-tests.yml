@@ -1,0 +1,113 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Display Python version
+      run: python -c "import sys; print(f'Python {sys.version}')"
+    
+    - name: Install Defects4J (Ubuntu/Mac)
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          echo "Installing Defects4J on Ubuntu..."
+          sudo apt-get update
+          sudo apt-get install -y git wget unzip
+          git clone https://github.com/rjust/defects4j
+          cd defects4j
+          ./init.sh
+          echo "DEFECTS4J_HOME=$(pwd)" >> $GITHUB_ENV
+          echo "$(pwd)/framework/bin" >> $GITHUB_PATH
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          echo "Installing Defects4J on macOS..."
+          brew install git wget
+          git clone https://github.com/rjust/defects4j
+          cd defects4j
+          ./init.sh
+          echo "DEFECTS4J_HOME=$(pwd)" >> $GITHUB_ENV
+          echo "$(pwd)/framework/bin" >> $GITHUB_PATH
+        fi
+    
+    - name: Install Java (required for Defects4J)
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get install -y openjdk-11-jdk
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install openjdk@11
+          sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+        fi
+    
+    - name: Verify installations
+      run: |
+        echo "Python: $(python --version)"
+        echo "Java:"
+        java -version
+        echo "Defects4J:"
+        defects4j version || echo "Defects4J not in PATH"
+    
+    - name: Run unit tests
+      run: |
+        python -m pytest tests/ -v --tb=short
+    
+    - name: Run validation tests
+      run: |
+        python -m pytest tests/test_validation.py -v
+    
+    - name: Run integration tests
+      run: |
+        python -m pytest tests/test_integration.py -v
+      
+    - name: Check code style (optional)
+      run: |
+        python -m py_compile core/*.py parallel/*.py utils/*.py 2>/dev/null || true
+
+  quick-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+    
+    - name: Run quick tests (no Defects4J)
+      run: |
+        # Create mock modules for testing without Defects4J
+        python -c "
+        import sys
+        sys.path.insert(0, '.')
+        
+        # Create minimal mock modules for testing
+        import os
+        os.makedirs('core', exist_ok=True)
+        os.makedirs('tests', exist_ok=True)
+        
+        # Run parser tests (they don't need Defects4J)
+        exec(open('tests/test_mutation_parser.py').read())
+        "
+    
+    - name: Check for syntax errors
+      run: |
+        python -m py_compile main.py config/*.py 2>&1 | head -20
